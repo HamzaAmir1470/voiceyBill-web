@@ -19,7 +19,14 @@ export function formatCurrency(
   } = options;
 
   if (!amount || isNaN(amount)) {
-    return compact ? "$0" : "$0.00";
+    const symbol = new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    })
+      .formatToParts(0)
+      .find((p) => p.type === "currency")?.value ?? "$";
+    return compact ? `${symbol}0` : `${symbol}0.00`;
   }
 
   const absAmount = Math.abs(amount);
@@ -33,7 +40,7 @@ export function formatCurrency(
     } else if (absAmount >= 1_000) {
       formattedAmount = `${(absAmount / 1_000).toFixed(1)}K`;
     } else {
-      formattedAmount = absAmount.toFixed(0);
+      formattedAmount = absAmount.toFixed(absAmount % 1 === 0 ? 0 : 2);
     }
 
     const symbol = new Intl.NumberFormat(locale, {

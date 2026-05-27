@@ -180,17 +180,37 @@ export const transactionColumns: ColumnDef<TransactionType>[] = [
       const amount = parseFloat(row.getValue("amount"));
       const type = row.getValue("type");
       const isIncome = type === _TRANSACTION_TYPE.INCOME;
+      const originalAmount = row.original.originalAmount;
+      const originalCurrency = row.original.originalCurrency;
+      const baseCurrencyAtTime = row.original.baseCurrencyAtTime;
+      const exchangeRate = row.original.exchangeRate;
+      const rateSource = row.original.rateSource;
 
       return (
-        <div
-          className={`font-semibold metric-numeric text-[13px] tracking-tight ${
-            isIncome
-              ? "text-emerald-600 dark:text-brand-green-light font-bold"
-              : "text-foreground font-medium"
-          }`}
-        >
-          <span className="mr-0.5 opacity-80">{isIncome ? "+" : "-"}</span>
-          {formatCurrency(amount)}
+        <div>
+          <div
+            className={`font-semibold metric-numeric text-[13px] tracking-tight ${
+              isIncome
+                ? "text-emerald-600 dark:text-brand-green-light font-bold"
+                : "text-foreground font-medium"
+            }`}
+          >
+            <span className="mr-0.5 opacity-80">{isIncome ? "+" : "-"}</span>
+            {formatCurrency(amount, { currency: baseCurrencyAtTime || undefined })}
+          </div>
+          {originalCurrency && originalAmount != null && (
+            <div
+              className="text-[11px] text-muted-foreground/70 metric-numeric"
+              title={`Rate: ${exchangeRate ?? "N/A"}${rateSource === "cached" ? " (cached)" : ""}`}
+            >
+              ({formatCurrency(originalAmount, { currency: originalCurrency })})
+              {rateSource === "cached" && (
+                <span className="ml-0.5 text-amber-500" title="Used cached exchange rate">
+                  !
+                </span>
+              )}
+            </div>
+          )}
         </div>
       );
     },
