@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, X, Trash2 } from "lucide-react";
+import { Bell, X, Trash2, AlertCircle, AlertTriangle, Info } from "lucide-react";
 import { useTypedSelector, useAppDispatch } from "@/app/hook";
 import { Button } from "../ui/button";
 import {
@@ -32,13 +32,13 @@ export const NotificationDropdown = () => {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "budget_alert":
-        return "📊";
+        return AlertTriangle;
       case "error":
-        return "❌";
+        return AlertCircle;
       case "warning":
-        return "⚠️";
+        return AlertTriangle;
       default:
-        return "ℹ️";
+        return Info;
     }
   };
 
@@ -123,9 +123,10 @@ export const NotificationDropdown = () => {
                   )}
                 >
                   <div className="flex items-start gap-2">
-                    <span className="text-lg shrink-0 mt-0.5">
-                      {getNotificationIcon(notification.type)}
-                    </span>
+                    {(() => {
+                      const Icon = getNotificationIcon(notification.type);
+                      return <Icon className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />;
+                    })()}
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-xs text-foreground truncate">
                         {notification.title}

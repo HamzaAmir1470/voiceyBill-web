@@ -54,37 +54,49 @@ const notificationSlice = createSlice({
       state.notifications = [];
     },
     addBudgetAlerts: (
-      state,
-      action: PayloadAction<{
-        alerts: Array<{
-          message: string;
-          type: "category" | "overall";
-          category?: string;
-        }>;
-        month: number;
-        year: number;
-      }>
-    ) => {
-      const { alerts, month, year } = action.payload;
+  state,
+  action: PayloadAction<{
+    alerts: Array<{
+      message: string;
+      type: "category" | "overall";
+      category?: string;
+    }>;
+    month: number;
+    year: number;
+  }>
+) => {
+  const { alerts, month, year } = action.payload;
 
-      alerts.forEach((alert) => {
-        const notification: NotificationItem = {
-          id: `${Date.now()}-${Math.random()}`,
-          type: "budget_alert",
-          title: alert.type === "overall" ? "Overall Budget Alert" : `${alert.category} Alert`,
-          message: alert.message,
-          category: alert.category,
-          timestamp: Date.now(),
-          read: false,
-        };
-        state.notifications.unshift(notification);
-      });
+  alerts.forEach((alert) => {
+    // check if same alert already exists
+    const exists = state.notifications.some(
+      (n) =>
+        n.type === "budget_alert" &&
+        n.message === alert.message &&
+        n.category === alert.category &&
+        n.title === (alert.type === "overall" ? "Overall Budget Alert" : `${alert.category} Alert`)
+    );
 
-      // Keep only last 20 notifications
-      if (state.notifications.length > 20) {
-        state.notifications.splice(20);
-      }
-    },
+    if (!exists) {
+      const notification: NotificationItem = {
+        id: `${Date.now()}-${Math.random()}`,
+        type: "budget_alert",
+        title: alert.type === "overall" ? "Overall Budget Alert" : `${alert.category} Alert`,
+        message: alert.message,
+        category: alert.category,
+        timestamp: Date.now(),
+        read: false,
+      };
+      state.notifications.unshift(notification);
+    }
+  });
+
+  // Keep only last 20 notifications
+  if (state.notifications.length > 20) {
+    state.notifications.splice(20);
+  }
+}
+
   },
 });
 

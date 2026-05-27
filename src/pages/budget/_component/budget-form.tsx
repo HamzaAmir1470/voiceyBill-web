@@ -17,6 +17,7 @@ import CurrencyInputField from "@/components/ui/currency-input";
 import { CATEGORIES } from "@/constant";
 import { useUpsertBudgetMutation } from "@/features/budget/budgetAPI";
 import { BudgetSummary } from "@/features/budget/budgetType";
+import { getCategoryIcon } from "@/lib/category-icons";
 
 const budgetFormSchema = z
   .object({
@@ -176,29 +177,35 @@ const BudgetForm = ({
             </div>
 
             <div className="grid gap-3">
-              {CATEGORIES.map((category) => (
-                <FormField
-                  key={category.value}
-                  control={form.control}
-                  name={`categories.${category.value}`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{category.label}</FormLabel>
-                      <FormControl>
-                        <CurrencyInputField
-                          {...field}
-                          onValueChange={(value) =>
-                            field.onChange(value || "")
-                          }
-                          placeholder="$0.00"
-                          prefix="$"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ))}
+              {CATEGORIES.map((category) => {
+                const Icon = getCategoryIcon(category.value);
+                return (
+                  <FormField
+                    key={category.value}
+                    control={form.control}
+                    name={`categories.${category.value}`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                          {category.label}
+                        </FormLabel>
+                        <FormControl>
+                          <CurrencyInputField
+                            {...field}
+                            onValueChange={(value) =>
+                              field.onChange(value || "")
+                            }
+                            placeholder="$0.00"
+                            prefix="$"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                );
+              })}
             </div>
             {form.formState.errors.categories?.message && (
               <p className="text-sm text-destructive">

@@ -14,6 +14,7 @@ import { CATEGORIES } from "@/constant";
 import { useGetBudgetSummaryQuery } from "@/features/budget/budgetAPI";
 import { useAppDispatch } from "@/app/hook";
 import { addBudgetAlerts } from "@/features/notification/notificationSlice";
+import { getCategoryIcon } from "@/lib/category-icons";
 import DeleteBudgetButton from "./_component/delete-budget-button";
 import SetBudgetDrawer from "./_component/set-budget-drawer";
 
@@ -264,38 +265,6 @@ export default function Budget() {
             </Card>
           )}
 
-          {budget.hasBudget && budget.alerts.length > 0 && (
-            <div className="space-y-2">
-              {budget.alerts.map((alert) => {
-                const isOverall = alert.type === "overall";
-                const bgColor = isOverall ? "bg-red-50" : "bg-amber-50";
-                const textColor = isOverall ? "text-red-700" : "text-amber-700";
-                const borderColor = isOverall ? "border-l-red-400" : "border-l-amber-400";
-                const icon = isOverall ? "⚠️" : "📊";
-
-                return (
-                  <div
-                    key={alert.message}
-                    className={`flex items-start gap-3 rounded-md ${bgColor} ${textColor} px-3 py-3 text-sm border-l-4 ${borderColor}`}
-                  >
-                    <span className="shrink-0 pt-0.5">{icon}</span>
-                    <div className="flex-1">
-                      <p className="font-semibold">
-                        {isOverall ? "Overall Budget Alert" : "Category Alert"}
-                        {!isOverall && alert.category && (
-                          <span className="font-normal capitalize">
-                            {" "}
-                            ({alert.category})
-                          </span>
-                        )}
-                      </p>
-                      <p className="mt-1">{alert.message}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
 
           {budget.hasBudget && (
             <section className="space-y-4">
@@ -330,9 +299,15 @@ export default function Budget() {
                       }
                     >
                       <div className="space-y-1">
-                        <p className="font-semibold text-foreground">
-                          {getCategoryLabel(category.name)}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          {(() => {
+                            const Icon = getCategoryIcon(category.name);
+                            return <Icon className="h-4 w-4 text-muted-foreground" />;
+                          })()}
+                          <p className="font-semibold text-foreground">
+                            {getCategoryLabel(category.name)}
+                          </p>
+                        </div>
                         <div className="text-sm font-medium text-foreground">
                           <p>Limit: {formatCurrency(category.limit)}</p>
                           <p>
