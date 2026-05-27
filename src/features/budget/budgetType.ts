@@ -12,6 +12,12 @@ export interface BudgetCategorySummary {
   exceeded: boolean;
 }
 
+export interface BudgetAlert {
+  message: string;
+  type: "category" | "overall";
+  category?: string;
+}
+
 export interface BudgetSummary {
   hasBudget: boolean;
   month: number;
@@ -22,7 +28,7 @@ export interface BudgetSummary {
   usagePercentage: number;
   exceeded: boolean;
   categories: BudgetCategorySummary[];
-  alerts: string[];
+  alerts: BudgetAlert[];
 }
 
 export interface BudgetSummaryResponse {

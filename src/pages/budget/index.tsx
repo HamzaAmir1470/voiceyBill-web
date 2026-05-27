@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import PageLayout from "@/components/page-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -12,6 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, WalletCards } from "lucide-react";
 import { CATEGORIES } from "@/constant";
 import { useGetBudgetSummaryQuery } from "@/features/budget/budgetAPI";
+import { useAppDispatch } from "@/app/hook";
+import { addBudgetAlerts } from "@/features/notification/notificationSlice";
 import DeleteBudgetButton from "./_component/delete-budget-button";
 import SetBudgetDrawer from "./_component/set-budget-drawer";
 
@@ -107,6 +109,7 @@ function BudgetPageSkeleton() {
 }
 
 export default function Budget() {
+  const dispatch = useAppDispatch();
   const currentMonthYear = getCurrentMonthYear();
   const monthOptions = useMemo(() => getBudgetMonthOptions(), []);
   const [selectedMonthValue, setSelectedMonthValue] = useState(
@@ -126,6 +129,19 @@ export default function Budget() {
   });
 
   const budget = data?.data;
+
+  // Add budget alerts to notification store
+  useEffect(() => {
+    if (budget?.hasBudget && budget.alerts.length > 0) {
+      dispatch(
+        addBudgetAlerts({
+          alerts: budget.alerts,
+          month: budget.month,
+          year: budget.year,
+        })
+      );
+    }
+  }, [budget?.alerts, budget?.hasBudget, dispatch]);
   const summaryItems = [
     {
       label: "Total Budget",
@@ -250,15 +266,34 @@ export default function Budget() {
 
           {budget.hasBudget && budget.alerts.length > 0 && (
             <div className="space-y-2">
-              {budget.alerts.map((alert) => (
-                <div
-                  key={alert}
-                  className="flex items-center gap-2 rounded-md bg-red-50 px-3 py-3 text-sm text-red-700"
-                >
-                  <AlertTriangle className="h-4 w-4" />
-                  <span>{alert}</span>
-                </div>
-              ))}
+              {budget.alerts.map((alert) => {
+                const isOverall = alert.type === "overall";
+                const bgColor = isOverall ? "bg-red-50" : "bg-amber-50";
+                const textColor = isOverall ? "text-red-700" : "text-amber-700";
+                const borderColor = isOverall ? "border-l-red-400" : "border-l-amber-400";
+                const icon = isOverall ? "⚠️" : "📊";
+
+                return (
+                  <div
+                    key={alert.message}
+                    className={`flex items-start gap-3 rounded-md ${bgColor} ${textColor} px-3 py-3 text-sm border-l-4 ${borderColor}`}
+                  >
+                    <span className="shrink-0 pt-0.5">{icon}</span>
+                    <div className="flex-1">
+                      <p className="font-semibold">
+                        {isOverall ? "Overall Budget Alert" : "Category Alert"}
+                        {!isOverall && alert.category && (
+                          <span className="font-normal capitalize">
+                            {" "}
+                            ({alert.category})
+                          </span>
+                        )}
+                      </p>
+                      <p className="mt-1">{alert.message}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
