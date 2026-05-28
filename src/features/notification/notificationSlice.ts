@@ -65,7 +65,7 @@ const notificationSlice = createSlice({
     year: number;
   }>
 ) => {
-  const { alerts, month, year } = action.payload;
+  const { alerts } = action.payload;
 
   alerts.forEach((alert) => {
     // check if same alert already exists
