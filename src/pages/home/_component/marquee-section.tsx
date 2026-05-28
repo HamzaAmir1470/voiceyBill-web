@@ -1,26 +1,26 @@
 const terms = [
   { label: "Voice Input", highlight: false },
   { label: "Expense Tracking", highlight: false },
-  { label: "Q1 Budget Report", highlight: true },
-  { label: "Cash Flow", highlight: false },
-  { label: "Receipt Scanning", highlight: false },
-  { label: "Balance Sheet", highlight: false },
-  { label: "Tax Summary", highlight: true },
-  { label: "Annual Report", highlight: false },
-  { label: "Multi-currency", highlight: false },
-  { label: "Recurring Bills", highlight: false },
-  { label: "Spending Trends", highlight: true },
+  { label: "Receipt Scanning", highlight: true },
+  { label: "Budget Tracking", highlight: false },
+  { label: "Multi-Currency", highlight: false },
+  { label: "Recurring Bills", highlight: true },
+  { label: "Monthly Reports", highlight: false },
+  { label: "AI Categories", highlight: false },
+  { label: "Spending Analytics", highlight: true },
+  { label: "Transaction History", highlight: false },
+  { label: "Splitwise", highlight: false },
 ];
 
 const TermList = ({ aria }: { aria?: boolean }) => (
   <div
-    className="font-display font-bold text-xl uppercase tracking-tighter text-zinc-300 italic flex shrink-0 justify-around gap-8 min-w-full animate-marquee"
+    className="font-display font-bold text-xl uppercase tracking-tighter text-muted-foreground/40 italic flex shrink-0 justify-around gap-8 min-w-full animate-marquee"
     aria-hidden={aria}
   >
     {terms.map(({ label, highlight }) => (
       <span
         key={label}
-        className={highlight ? "text-[#015200] underline decoration-[#9FFF59]" : ""}
+        className={highlight ? "text-primary underline decoration-brand-green-light" : ""}
       >
         {label}
       </span>
@@ -30,7 +30,7 @@ const TermList = ({ aria }: { aria?: boolean }) => (
 
 const MarqueeSection = () => {
   return (
-    <section className="py-12 bg-white border-y border-zinc-100 overflow-hidden">
+    <section className="py-12 bg-background border-y border-border overflow-hidden">
       <div className="flex overflow-hidden select-none gap-8">
         <TermList />
         <TermList aria />
