@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,7 +17,9 @@ import CurrencyInputField from "@/components/ui/currency-input";
 import { CATEGORIES } from "@/constant";
 import { useUpsertBudgetMutation } from "@/features/budget/budgetAPI";
 import { BudgetSummary } from "@/features/budget/budgetType";
+import { AIScanReceiptData } from "@/features/transaction/transationType";
 import { getCategoryIcon } from "@/lib/category-icons";
+import BudgetVoiceRecorder from "./budget-voice-recorder";
 
 const budgetFormSchema = z
   .object({
@@ -68,6 +70,7 @@ interface BudgetFormProps {
   month: number;
   year: number;
   budget?: BudgetSummary;
+  mode?: "voice" | "manual";
   onCloseDrawer?: () => void;
 }
 
@@ -75,9 +78,11 @@ const BudgetForm = ({
   month,
   year,
   budget,
+  mode = "manual",
   onCloseDrawer,
 }: BudgetFormProps) => {
   const [upsertBudget, { isLoading }] = useUpsertBudgetMutation();
+  const [isVoiceProcessing, setIsVoiceProcessing] = useState(false);
 
   const defaultCategoryValues = useMemo(() => {
     return CATEGORIES.reduce<Record<string, string>>((acc, category) => {
@@ -105,6 +110,63 @@ const BudgetForm = ({
       categories: defaultCategoryValues,
     });
   }, [budget, defaultCategoryValues, form]);
+
+  const normalizeText = (value?: string) =>
+    (value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+  const findVoiceCategory = (data: AIScanReceiptData) => {
+    const searchableText = normalizeText(
+      [data.category, data.title, data.description, data.transcription]
+        .filter(Boolean)
+        .join(" ")
+    );
+
+    return CATEGORIES.find((category) => {
+      const value = normalizeText(category.value);
+      const label = normalizeText(category.label);
+      return (
+        searchableText === value ||
+        searchableText === label ||
+        searchableText.includes(value) ||
+        searchableText.includes(label)
+      );
+    });
+  };
+
+  const handleVoiceComplete = (data: AIScanReceiptData) => {
+    const amount = Number(data.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error("Voice did not include a valid budget amount.");
+      return;
+    }
+
+    const amountValue = amount.toString();
+    const matchedCategory = findVoiceCategory(data);
+    const currentTotalBudget = Number(form.getValues("totalBudget"));
+    const shouldSetTotalBudget =
+      !matchedCategory ||
+      !Number.isFinite(currentTotalBudget) ||
+      currentTotalBudget <= 0 ||
+      currentTotalBudget < amount;
+
+    if (shouldSetTotalBudget) {
+      form.setValue("totalBudget", amountValue, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+
+    if (matchedCategory) {
+      form.setValue(`categories.${matchedCategory.value}`, amountValue, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      toast.success(`${matchedCategory.label} budget filled from voice.`);
+      return;
+    }
+
+    toast.success("Total budget filled from voice.");
+  };
 
   const onSubmit = (values: BudgetFormValues) => {
     const totalBudget = Number(values.totalBudget);
@@ -147,6 +209,14 @@ const BudgetForm = ({
         className="flex h-full min-h-0 flex-col"
       >
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pb-4">
+          {mode === "voice" && (
+            <BudgetVoiceRecorder
+              loadingChange={isVoiceProcessing}
+              onLoadingChange={setIsVoiceProcessing}
+              onVoiceComplete={handleVoiceComplete}
+            />
+          )}
+
           <FormField
             control={form.control}
             name="totalBudget"
@@ -156,6 +226,7 @@ const BudgetForm = ({
                 <FormControl>
                   <CurrencyInputField
                     {...field}
+                    disabled={isVoiceProcessing}
                     onValueChange={(value) => field.onChange(value || "")}
                     placeholder="$0.00"
                     prefix="$"
@@ -193,6 +264,7 @@ const BudgetForm = ({
                         <FormControl>
                           <CurrencyInputField
                             {...field}
+                            disabled={isVoiceProcessing}
                             onValueChange={(value) =>
                               field.onChange(value || "")
                             }
@@ -219,7 +291,7 @@ const BudgetForm = ({
           <Button
             type="submit"
             className="w-full"
-            disabled={isLoading}
+            disabled={isLoading || isVoiceProcessing}
           >
             {isLoading ? <Loader className="h-4 w-4 animate-spin" /> : null}
             Save Budget
