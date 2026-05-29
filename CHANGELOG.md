@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.0](https://github.com/voiceyBill/voiceyBill-web/compare/voiceybill-client-v1.1.0...voiceybill-client-v1.2.0) (2026-05-29)
+
+
+### Features
+
+* **client:** Implement multi currency support ([1b493e4](https://github.com/voiceyBill/voiceyBill-web/commit/1b493e4152c64af69d10d2396e99b923ecdf549a))
+
+
+### Bug Fixes
+
+* Add change password option in Settings ([#73](https://github.com/voiceyBill/voiceyBill-web/issues/73)) ([25ad4c1](https://github.com/voiceyBill/voiceyBill-web/commit/25ad4c164ebcbee32da0f2d87194baa6bb97559f))
+* address copilot review comments for multi-currency support ([f2cf09d](https://github.com/voiceyBill/voiceyBill-web/commit/f2cf09d4d5ffec7567674f74a6e73fa66b40c437))
+* **auth:** resolve dark mode inconsistency across authentication pages ([704d31c](https://github.com/voiceyBill/voiceyBill-web/commit/704d31c1f1013ccb92c758d4bad45b41401a9ad7))
+* **auth:** Resolve dark mode inconsistency across authentication pages ([79a2c5a](https://github.com/voiceyBill/voiceyBill-web/commit/79a2c5a99b94b9c2a31a71a3feefd4df085ea19b))
+* correct zero/NaN fallback in formatCurrency to use Intl.NumberFormat ([515d993](https://github.com/voiceyBill/voiceyBill-web/commit/515d993cef5bad6d74d8674aa4c2e7e8d962f27e))
+* **notification:** close popup on outside click ([ef70484](https://github.com/voiceyBill/voiceyBill-web/commit/ef70484a95ccc9f7418dd3c4b06d33cb30a89100))
+* **notification:** Close popup on outside click ([53bea3a](https://github.com/voiceyBill/voiceyBill-web/commit/53bea3a389e3972313c078d81204a7905c52b824))
+
 ## [1.1.0](https://github.com/voiceyBill/voiceyBill-web/compare/voiceybill-client-v1.0.0...voiceybill-client-v1.1.0) (2026-05-28)
 
 
