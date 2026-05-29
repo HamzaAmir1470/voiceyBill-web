@@ -9,6 +9,7 @@ export const userApi = apiClient.injectEndpoints({
         method: "PUT",
         body: formData,
       }),
+      invalidatesTags: ["analytics", "transactions"],
     }),
     changePassword: builder.mutation<ChangePasswordResponse, ChangePasswordRequest>({
       query: (body) => ({
