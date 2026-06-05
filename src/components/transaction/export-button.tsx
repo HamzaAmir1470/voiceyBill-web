@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { downloadFile } from "../../lib/downloadCsv";
 
 export default function ExportButton() {
   const [triggerExport] = useLazyExportTransactionsQuery();
@@ -17,19 +18,10 @@ export default function ExportButton() {
 
       const result = await triggerExport().unwrap();
 
-      const url = window.URL.createObjectURL(result);
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `transactions-${
-        new Date().toISOString().split("T")[0]
-      }.csv`;
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      window.URL.revokeObjectURL(url);
+      downloadFile(
+        result,
+        `transactions-${new Date().toISOString().split("T")[0]}.csv`,
+      );
 
       toast.success("Export completed");
     } catch (err) {
