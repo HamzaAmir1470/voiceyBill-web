@@ -3,6 +3,7 @@ import { Download } from "lucide-react";
 import { toast } from "sonner";
 
 import { useLazyExportTransactionsQuery } from "@/features/transaction/transactionAPI";
+import { downloadFile } from "../../lib/downloadCsv";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,19 +29,10 @@ export default function Transactions() {
 
       const blob = await triggerExport().unwrap();
 
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `transactions-${new Date()
-        .toISOString()
-        .split("T")[0]}.csv`;
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      window.URL.revokeObjectURL(url);
+      downloadFile(
+        blob,
+        `transactions-${new Date().toISOString().split("T")[0]}.csv`,
+      );
 
       toast.success("Export completed", {
         id: "export-transactions",
