@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Calendar, Loader } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,9 +36,9 @@ import VoiceRecorder from "./voice-recorder";
 import {
   _TRANSACTION_FREQUENCY,
   _TRANSACTION_TYPE,
-  CATEGORIES,
   PAYMENT_METHODS,
 } from "@/constant";
+import { useGetCategoriesQuery, useCreateCategoryMutation } from "@/features/category/categoryAPI";
 import { Switch } from "../ui/switch";
 import CurrencyInputField from "../ui/currency-input";
 import { SingleSelector } from "../ui/single-select";
@@ -100,6 +100,14 @@ const TransactionForm = (props: {
   } = props;
 
   const [isScanning, setIsScanning] = useState(false);
+  const categoryInputRef = useRef("");
+  const { data: categoriesData } = useGetCategoriesQuery();
+  const [createCategory] = useCreateCategoryMutation();
+  const categoryOptions = (categoriesData?.data ?? []).map((cat) => ({
+    value: cat.name.toLowerCase(),
+    label: cat.name,
+    color: cat.color,
+  }));
   const { user } = useTypedSelector((state) => state.auth);
   const baseCurrency = user?.baseCurrency || "USD";
   const { data: currencyData } = useGetSupportedCurrenciesQuery();
@@ -459,16 +467,45 @@ const TransactionForm = (props: {
                   <FormLabel>Category</FormLabel>
                   <SingleSelector
                     value={
-                      CATEGORIES.find((opt) => opt.value === field.value) ||
-                      field.value
+                      categoryOptions.find((opt) => opt.value === field.value) ||
+                      (field.value
                         ? { value: field.value, label: field.value }
-                        : undefined
+                        : undefined)
                     }
                     onChange={(option) => field.onChange(option.value)}
-                    options={CATEGORIES}
+                    options={categoryOptions}
                     placeholder="Select or type a category"
-                    creatable
                     disabled={isScanning}
+                    inputProps={{
+                      onValueChange: (val) => { categoryInputRef.current = val; },
+                    }}
+                    emptyIndicator={
+                      <div className="flex items-center justify-between px-3 py-2">
+                        <span className="text-sm text-muted-foreground">No match found</span>
+                        <button
+                          type="button"
+                          className="text-sm font-medium text-primary hover:underline"
+                          onMouseDown={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const name = categoryInputRef.current.trim();
+                            if (!name) return;
+                            try {
+                              const colors = ["#22C55E","#F97316","#3B82F6","#8B5CF6","#EC4899","#F59E0B","#EF4444","#06B6D4"];
+                              const color = colors[name.length % colors.length];
+                              await createCategory({ name, color }).unwrap();
+                              field.onChange(name.toLowerCase());
+                              categoryInputRef.current = "";
+                              toast.success(`Category "${name}" added`);
+                            } catch {
+                              toast.error("Failed to add category");
+                            }
+                          }}
+                        >
+                          + Add Category
+                        </button>
+                      </div>
+                    }
                   />
                   <FormMessage />
                 </FormItem>
@@ -666,6 +703,7 @@ const TransactionForm = (props: {
           )}
         </form>
       </Form>
+
     </div>
   );
 };
